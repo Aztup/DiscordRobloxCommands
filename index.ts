@@ -9,14 +9,14 @@ import CommandManager from './CommandManager';
 const app = express();
 app.use(express.json());
 
-bot.on('interactionCreate', (interaction) => {
+bot.on('interactionCreate', async (interaction) => {
     if (!interaction.isCommand()) return;
 
     if (interaction.commandName === 'ban') {
         const {value: username} = interaction.options.get('username') as any;
         const {value: reason} = interaction.options.get('reason') as any;
 
-        const {foundPlayerServer, chosenServer} = CommandManager.sendToServer('ban', [username, reason], interaction.user, username);
+        const {foundPlayerServer, chosenServer} = await CommandManager.sendToServer('ban', [username, reason], interaction.user, username);
 
         if (foundPlayerServer) {
             interaction.reply(`Found user in a server, sending command to there [${chosenServer}]`);

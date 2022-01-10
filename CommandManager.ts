@@ -1,6 +1,8 @@
 import {randomBytes} from 'crypto';
 import {User} from 'discord.js';
 
+import axios from 'axios';
+
 const ARG_COMMAND_FAIL_INTERVAL = 5 * 1000; // 5 seconds
 const SERVER_TIMEOUT_INTERVAL = 5 * 1000; // 5 seconds
 
@@ -43,9 +45,19 @@ class CommandManager {
         }, ARG_COMMAND_FAIL_INTERVAL);
     }
 
-    sendToServer(command: string, args: any[], issuer: User, username = '') : SendToServerReturnData {
+    async sendToServer(command: string, args: any[], issuer: User, username = '') : Promise<SendToServerReturnData> {
         let chosenServer = '';
         let foundPlayerServer = false;
+
+        let robloxUser: any;
+
+        try {
+            const {data: {robloxUsername, robloxId, status}} = await axios.get(`https://verify.eryn.io/api/user/${issuer.id}`);
+
+            if (status === 'ok') {
+                robloxUser = {robloxUsername, robloxId};
+            };
+        } catch {}
 
         if (username) {
             this.allPlayers.forEach((playerIds, jobId) => {
@@ -67,6 +79,7 @@ class CommandManager {
             sent: false,
             issuer: issuer.toJSON(),
             command,
+            robloxUser,
             commandId: randomBytes(8).toString('hex'),
             args
         };
